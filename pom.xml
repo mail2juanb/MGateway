@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.microdiab</groupId>
-    <artifactId>MGateway</artifactId>
+    <artifactId>mgateway</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>MGateway</name>
+    <name>mgateway</name>
     <description>Entry point to manage requests</description>
     <url/>
     <licenses>

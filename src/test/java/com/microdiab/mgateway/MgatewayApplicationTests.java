@@ -1,10 +1,10 @@
-package com.microdiab.MGateway;
+package com.microdiab.mgateway;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class MGatewayApplicationTests {
+class MgatewayApplicationTests {
 
     @Test
     void contextLoads() {
