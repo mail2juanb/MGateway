@@ -7,6 +7,9 @@ import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -19,20 +22,47 @@ public class CustomGlobalFilter implements GlobalFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        // Logique "pre"-filtre : exécutée avant que la requête ne soit envoyée au service en aval
-        ServerHttpRequest request = exchange.getRequest();
-        log.info("*** Requête interceptée ! L'URL est : {}", request.getURI());
+        ServerHttpRequest originalRequest = exchange.getRequest();
+        String path = originalRequest.getURI().getPath();
+        String method = originalRequest.getMethod().toString();
 
-        // Appel pour continuer la chaîne de filtres
-        return chain.filter(exchange)
+        log.info("*** FILTRE - {} {}", method, path);
+
+        // Logique "pre"-filtre : ajout des en-têtes d'authentification
+        return ReactiveSecurityContextHolder.getContext()
+                .map(SecurityContext::getAuthentication)
+                .filter(Authentication::isAuthenticated)
+                .flatMap(authentication -> {
+                    // LOG DE LOGIN ICI
+                    log.info("***** LOGIN SUCCESS dans le filtre *****");
+                    log.info("Utilisateur authentifié : {} pour {}", authentication.getName(), path);
+                    log.info("Rôles: {}", authentication.getAuthorities().toString());
+
+                        ServerHttpRequest request = exchange.getRequest().mutate()
+                                .header("X-Auth-Username", authentication.getName())
+                                .header("X-Auth-Roles", authentication.getAuthorities().toString())
+                                .build();
+                        ServerWebExchange newExchange = exchange.mutate().request(request).build();
+                        log.info("*** Requête interceptée ! L'URL est : {}, User: {}, Roles: {}",
+                                newExchange.getRequest().getURI(),
+                                authentication.getName(),
+                                authentication.getAuthorities());
+                        return chain.filter(newExchange);
+                })
+                .switchIfEmpty(Mono.defer(() -> {
+                    log.info("*** Aucun utilisateur authentifié pour : {}", path);
+                    log.info("*** Requête interceptée ! L'URL est : {}", exchange.getRequest().getURI());
+                    return chain.filter(exchange);
+                }))
                 .doOnSuccess(aVoid -> {
-                    // Logique "post"-filtre : exécutée après que la réponse a été reçue du service en aval
+                    // Logique "post"-filtre : après la réponse
                     ServerHttpResponse response = exchange.getResponse();
+                    log.info("*** Réponse {} pour {}", response.getStatusCode(), path);
                     log.info("*** Réponse envoyée avec le statut : {}", response.getStatusCode());
                 })
                 .doOnError(throwable -> {
                     // Gestion des erreurs
-                    log.error("Une erreur s'est produite : {}", throwable.getMessage());
+                    log.error("*** Une erreur s'est produite : {}", throwable.getMessage());
                 });
     }
 }
