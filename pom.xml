@@ -52,7 +52,7 @@
         </dependency>
 
         <!-- Remplace Spring Cloud Sleuth pour Spring Boot 3.x -->
-        <!-- Actuator avec Micrometer Tracing intégré -->
+        <!-- Actuator avec Micrometer Tracing integre -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
