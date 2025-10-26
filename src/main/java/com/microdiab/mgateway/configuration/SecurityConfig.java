@@ -1,14 +1,23 @@
 package com.microdiab.mgateway.configuration;
 
+import com.microdiab.mgateway.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.core.userdetails.MapReactiveUserDetailsService;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.authentication.RedirectServerAuthenticationSuccessHandler;
 import org.springframework.security.web.server.authentication.logout.ServerLogoutHandler;
 import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
+import reactor.core.publisher.Mono;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -17,26 +26,57 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebFluxSecurity
 public class SecurityConfig {
 
+    private final UserRepository userRepository;
+
+    public SecurityConfig(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+
     @Bean
-    public SecurityWebFilterChain securityWebFilterChain (ServerHttpSecurity http) {
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public MapReactiveUserDetailsService userDetailsService() {
+        UserDetails user = User.withUsername("user")
+                .password(passwordEncoder().encode("password"))
+                .roles("USER")
+                .build();
+        UserDetails adminUser = User.withUsername("admin")
+                .password(passwordEncoder().encode("admin"))
+                .roles("ADMIN")
+                .build();
+        return new MapReactiveUserDetailsService(user, adminUser);
+    }
+
+    @Bean
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         http
-                .csrf(ServerHttpSecurity.CsrfSpec::disable) // Désactive CSRF pour les APIs
+                .csrf(ServerHttpSecurity.CsrfSpec::disable) // Desactive CSRF pour les APIs
                 .authorizeExchange(exchanges ->
                         exchanges
+                                .pathMatchers("/clientui/login").permitAll()
                                 .pathMatchers("/clientui/webjars/**").permitAll() // Ressources statiques accessibles sans authentification
                                 .pathMatchers("/actuator/**").permitAll()
-                                .pathMatchers("/logout", "/logout-success").permitAll() // Pages de logout non protégées
-                                .anyExchange().authenticated() // Toutes les autres routes nécessitent une authentification
+                                .pathMatchers("/logout", "/logout-success").permitAll() // Pages de logout non protegees
+                                .anyExchange().authenticated() // Toutes les autres routes necessitent une authentification
                 )
                 .httpBasic(withDefaults()) // Active l'authentification basique
+                .formLogin(form -> form
+                                .loginPage("/clientui/login")  // Page de login servie par clientui
+                        // Pas de .loginProcessingUrl() en WebFlux !
+                )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutHandler(customLogoutHandler()) // Gestionnaire personnalisé
+                        .logoutHandler(customLogoutHandler()) // Gestionnaire personnalise
                         .logoutSuccessHandler(logoutSuccessHandler())
                 );
 
         return http.build();
     }
+
 
 
     @Bean
