@@ -1,27 +1,23 @@
 package com.microdiab.mgateway.model;
 
-
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 import jakarta.validation.constraints.NotBlank;
 
-@Entity
+
 @Table(name = "users")
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(updatable = false)
+    // R2DBC gère automatiquement l'auto-incrément si la colonne est définie comme telle en base
     private Long id;
 
     @NotBlank(message = "username is mandatory")
-    @Column(nullable = false, unique = true)
     private String username;
 
     @NotBlank(message = "password is mandatory")
-    @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
     private String role;
 
 
