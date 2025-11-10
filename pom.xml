@@ -102,17 +102,17 @@
         </dependency>
 
 
-        <!-- Pour le partage de sessions - pas certain que ce soit utile -->
-        <dependency>
-            <groupId>org.springframework.session</groupId>
-            <artifactId>spring-session-data-redis</artifactId>
-        </dependency>
+        <!-- REDIS - Pour le partage de sessions - pas certain que ce soit utile -->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.session</groupId>-->
+<!--            <artifactId>spring-session-data-redis</artifactId>-->
+<!--        </dependency>-->
 
-        <!-- Pour le stockage des utilisateurs -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>
+        <!-- REDIS - Pour le stockage des utilisateurs -->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-starter-data-redis</artifactId>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
