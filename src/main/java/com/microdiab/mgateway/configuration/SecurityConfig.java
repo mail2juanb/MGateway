@@ -1,6 +1,8 @@
 package com.microdiab.mgateway.configuration;
 
 import com.microdiab.mgateway.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,8 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebFluxSecurity
 public class SecurityConfig {
 
+    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+
     private final UserRepository userRepository;
 
     public SecurityConfig(UserRepository userRepository) {
@@ -34,6 +38,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+        logger.info("*** securityWebFilterChain TRIGGERED");
         http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable) // Desactive CSRF pour les APIs
                 .authorizeExchange(exchanges ->
@@ -59,8 +64,8 @@ public class SecurityConfig {
     @Bean
     public ServerLogoutSuccessHandler logoutSuccessHandler() {
         return (exchange, authentication) -> {
-            System.out.println("***** LOGOUT SUCCESS HANDLER *****");
-            System.out.println("Utilisateur complètement déconnecté");
+            logger.info("***** LOGOUT SUCCESS HANDLER *****");
+            logger.info("Utilisateur complètement déconnecté");
 
             ServerHttpResponse response = exchange.getExchange().getResponse();
             response.setStatusCode(HttpStatus.FOUND);
@@ -80,17 +85,17 @@ public class SecurityConfig {
     @Bean
     public ServerLogoutHandler customLogoutHandler() {
         return (exchange, authentication) -> {
-            System.out.println("***** CUSTOM LOGOUT HANDLER *****");
-            System.out.println("Invalidation complète pour: " +
+            logger.info("***** CUSTOM LOGOUT HANDLER *****");
+            logger.info("Invalidation complète pour: " +
                     (authentication != null ? authentication.getName() : "anonymous"));
 
             // Invalider explicitement la session
             return exchange.getExchange().getSession()
                     .doOnNext(session -> {
-                        System.out.println("Session ID avant invalidation: " + session.getId());
+                        logger.info("Session ID avant invalidation: " + session.getId());
                         session.getAttributes().clear(); // Vider tous les attributs
                         session.invalidate(); // Invalider la session
-                        System.out.println("Session invalidée");
+                        logger.info("Session invalidée");
                     })
                     .then();
         };
