@@ -1,8 +1,6 @@
 package com.microdiab.mgateway.configuration;
 
 import com.microdiab.mgateway.repository.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -17,39 +15,77 @@ import org.springframework.security.web.server.authentication.logout.ServerLogou
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
-
+/**
+ * Configuration class for security settings in the MGateway microservice.
+ * This class defines the security filter chain, password encoding, and logout handling
+ * for a reactive Spring WebFlux application.
+ *
+ * <p>It uses Spring Security's {@link EnableWebFluxSecurity} to enable security for WebFlux applications.
+ * The configuration includes:
+ * <ul>
+ *   <li>Disabling CSRF protection for API endpoints.</li>
+ *   <li>Permitting public access to static resources, actuator endpoints, and logout URLs.</li>
+ *   <li>Enforcing authentication for all other endpoints.</li>
+ *   <li>Configuring HTTP Basic authentication.</li>
+ *   <li>Custom logout handlers to invalidate sessions and clear cache.</li>
+ * </ul>
+ *
+ * @see EnableWebFluxSecurity
+ * @see ServerHttpSecurity
+ * @see SecurityWebFilterChain
+ */
 @Configuration
 @EnableWebFluxSecurity
 public class SecurityConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
-
     private final UserRepository userRepository;
 
+    /**
+     * Constructs a new SecurityConfig with the specified UserRepository.
+     *
+     * @param userRepository the repository used to access user data
+     */
     public SecurityConfig(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
-
+    /**
+     * Provides a BCrypt password encoder bean for encoding user passwords.
+     *
+     * @return a BCryptPasswordEncoder instance
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Configures the security filter chain for the application.
+     * Defines public and private endpoints, authentication method, and logout behavior.
+     *
+     * @param http the ServerHttpSecurity instance to configure
+     * @return the configured SecurityWebFilterChain
+     */
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-        logger.info("*** securityWebFilterChain TRIGGERED");
         http
-                .csrf(ServerHttpSecurity.CsrfSpec::disable) // Desactive CSRF pour les APIs
                 .authorizeExchange(exchanges ->
                         exchanges
                                 .pathMatchers("/clientui/webjars/**").permitAll() // Ressources statiques accessibles sans authentification
                                 .pathMatchers("/clientui/css/**").permitAll()
-                                .pathMatchers("/actuator/**").permitAll()
+                                .pathMatchers(
+                                        "/actuator/**",
+                                        "/apidocs/**",
+                                        "/swagger*/**",
+                                        "/v3/api-docs/**",
+                                        "/webjars/**",
+                                        "/favicon.ico"
+                                ).permitAll()
                                 .pathMatchers("/logout", "/logout-success").permitAll() // Pages de logout non protegees
                                 .anyExchange().authenticated() // Toutes les autres routes necessitent une authentification
                 )
                 .httpBasic(withDefaults()) // Active l'authentification basique
+                .csrf(ServerHttpSecurity.CsrfSpec::disable) // Desactive CSRF pour les APIs
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutHandler(customLogoutHandler()) // Gestionnaire personnalise
@@ -59,13 +95,15 @@ public class SecurityConfig {
         return http.build();
     }
 
-
-
+    /**
+     * Provides a custom logout success handler.
+     * Redirects to the home page and clears cache/cookies after logout.
+     *
+     * @return a ServerLogoutSuccessHandler instance
+     */
     @Bean
     public ServerLogoutSuccessHandler logoutSuccessHandler() {
         return (exchange, authentication) -> {
-            logger.info("***** LOGOUT SUCCESS HANDLER *****");
-            logger.info("Utilisateur complètement déconnecté");
 
             ServerHttpResponse response = exchange.getExchange().getResponse();
             response.setStatusCode(HttpStatus.FOUND);
@@ -81,21 +119,19 @@ public class SecurityConfig {
         };
     }
 
-
+    /**
+     * Provides a custom logout handler to invalidate the user session.
+     *
+     * @return a ServerLogoutHandler instance
+     */
     @Bean
     public ServerLogoutHandler customLogoutHandler() {
         return (exchange, authentication) -> {
-            logger.info("***** CUSTOM LOGOUT HANDLER *****");
-            logger.info("Invalidation complète pour: " +
-                    (authentication != null ? authentication.getName() : "anonymous"));
-
             // Invalider explicitement la session
             return exchange.getExchange().getSession()
                     .doOnNext(session -> {
-                        logger.info("Session ID avant invalidation: " + session.getId());
                         session.getAttributes().clear(); // Vider tous les attributs
                         session.invalidate(); // Invalider la session
-                        logger.info("Session invalidée");
                     })
                     .then();
         };
