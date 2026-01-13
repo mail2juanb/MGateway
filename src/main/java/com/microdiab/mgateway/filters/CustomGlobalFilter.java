@@ -47,7 +47,7 @@ public class CustomGlobalFilter implements GlobalFilter {
 
         // Vérifie si les headers d'authentification existent déjà
         if (!originalRequest.getHeaders().containsKey("X-Auth-Username")) {
-            //log.debug("*** Vérifie si les headers d'authentification existent déjà");
+            log.debug("*** Vérifie si les headers d'authentification existent déjà");
             return ReactiveSecurityContextHolder.getContext()
                     .flatMap(securityContext -> {
                         Authentication authentication = securityContext.getAuthentication();

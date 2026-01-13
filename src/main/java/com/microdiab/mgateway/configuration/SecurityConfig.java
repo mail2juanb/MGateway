@@ -71,14 +71,18 @@ public class SecurityConfig {
         http
                 .authorizeExchange(exchanges ->
                         exchanges
-                                .pathMatchers("/clientui/webjars/**").permitAll() // Ressources statiques accessibles sans authentification
-                                .pathMatchers("/clientui/css/**").permitAll()
+                                //.pathMatchers("/clientui/webjars/**").permitAll() // Ressources statiques accessibles sans authentification
+                                //.pathMatchers("/clientui/css/**").permitAll()
+                                //.pathMatchers("/clientui/js/**").permitAll()
                                 .pathMatchers(
                                         "/actuator/**",
                                         "/apidocs/**",
                                         "/swagger*/**",
                                         "/v3/api-docs/**",
                                         "/webjars/**",
+                                        "/clientui/webjars/**", // Garde aussi cette ligne pour la rétrocompatibilité
+                                        "/css/**",
+                                        "/js/**",
                                         "/favicon.ico"
                                 ).permitAll()
                                 .pathMatchers("/logout", "/logout-success").permitAll() // Pages de logout non protegees
