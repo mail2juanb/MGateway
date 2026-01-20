@@ -56,6 +56,12 @@
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
 
+        <!-- FEIGN -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+
         <!-- TRACING -->
         <!-- Bridge Brave pour Micrometer Tracing (remplace Sleuth) -->
         <dependency>
@@ -73,6 +79,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-logging</artifactId>
+        </dependency>
+
+        <!-- Sans micrometer-observation, pas de span CLIENT Netty.-->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-observation</artifactId>
         </dependency>
 
         <!-- Configurer la connexion a MySQL avec R2DBC -->
