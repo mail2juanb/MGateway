@@ -71,28 +71,25 @@ public class SecurityConfig {
         http
                 .authorizeExchange(exchanges ->
                         exchanges
-                                //.pathMatchers("/clientui/webjars/**").permitAll() // Ressources statiques accessibles sans authentification
-                                //.pathMatchers("/clientui/css/**").permitAll()
-                                //.pathMatchers("/clientui/js/**").permitAll()
                                 .pathMatchers(
                                         "/actuator/**",
                                         "/apidocs/**",
                                         "/swagger*/**",
                                         "/v3/api-docs/**",
                                         "/webjars/**",
-                                        "/clientui/webjars/**", // Garde aussi cette ligne pour la rétrocompatibilité
+                                        "/clientui/webjars/**",
                                         "/css/**",
                                         "/js/**",
                                         "/favicon.ico"
                                 ).permitAll()
-                                .pathMatchers("/logout", "/logout-success").permitAll() // Pages de logout non protegees
-                                .anyExchange().authenticated() // Toutes les autres routes necessitent une authentification
+                                .pathMatchers("/logout", "/logout-success").permitAll()
+                                .anyExchange().authenticated()
                 )
-                .httpBasic(withDefaults()) // Active l'authentification basique
-                .csrf(ServerHttpSecurity.CsrfSpec::disable) // Desactive CSRF pour les APIs
+                .httpBasic(withDefaults())
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutHandler(customLogoutHandler()) // Gestionnaire personnalise
+                        .logoutHandler(customLogoutHandler())
                         .logoutSuccessHandler(logoutSuccessHandler())
                 );
 
@@ -131,11 +128,11 @@ public class SecurityConfig {
     @Bean
     public ServerLogoutHandler customLogoutHandler() {
         return (exchange, authentication) -> {
-            // Invalider explicitement la session
+            // Explicitly invalidate the session
             return exchange.getExchange().getSession()
                     .doOnNext(session -> {
-                        session.getAttributes().clear(); // Vider tous les attributs
-                        session.invalidate(); // Invalider la session
+                        session.getAttributes().clear(); // Clear all attributes
+                        session.invalidate(); // Invalidate session
                     })
                     .then();
         };

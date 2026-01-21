@@ -27,7 +27,6 @@ class CustomInfoContributorTest {
         // Arrange
         when(environment.getProperty("info.app.version", "mgateway - Version not defined")).thenReturn("1.0.0");
         when(environment.getProperty("info.app.description", "mgateway - Description not defined")).thenReturn("Gestion des patients");
-        //when(environment.getProperty("info.app.documentation.swagger", "mgateway - Swagger Documentation not defined")).thenReturn("https://docs.microdiab.com/mgateway/swagger");
         when(environment.getProperty("info.app.documentation.javadoc", "mgateway - Javadoc Documentation not defined")).thenReturn("https://docs.microdiab.com/mgateway/javadoc");
         when(environment.getProperty("info.app.information", "mgateway - Informations not defined")).thenReturn("Microservice de gestion des patients");
 
@@ -48,7 +47,6 @@ class CustomInfoContributorTest {
 
         assertEquals("1.0.0", appInfo.get("version"));
         assertEquals("Gestion des patients", appInfo.get("description"));
-        //assertEquals("https://docs.microdiab.com/mgateway/swagger", appInfo.get("documentation-swagger"));
         assertEquals("https://docs.microdiab.com/mgateway/javadoc", appInfo.get("documentation-javadoc"));
         assertEquals("Microservice de gestion des patients", appInfo.get("information"));
         assertNotNull(appInfo.get("lastUpdated"));
@@ -59,7 +57,6 @@ class CustomInfoContributorTest {
         // Arrange
         when(environment.getProperty("info.app.version", "mgateway - Version not defined")).thenReturn("mgateway - Version not defined");
         when(environment.getProperty("info.app.description", "mgateway - Description not defined")).thenReturn("mgateway - Description not defined");
-        //when(environment.getProperty("info.app.documentation.swagger", "mgateway - Swagger Documentation not defined")).thenReturn("mgateway - Swagger Documentation not defined");
         when(environment.getProperty("info.app.documentation.javadoc", "mgateway - Javadoc Documentation not defined")).thenReturn("mgateway - Javadoc Documentation not defined");
         when(environment.getProperty("info.app.information", "mgateway - Informations not defined")).thenReturn("mgateway - Informations not defined");
 
@@ -80,7 +77,6 @@ class CustomInfoContributorTest {
 
         assertEquals("mgateway - Version not defined", appInfo.get("version"));
         assertEquals("mgateway - Description not defined", appInfo.get("description"));
-        //assertEquals("mgateway - Swagger Documentation not defined", appInfo.get("documentation-swagger"));
         assertEquals("mgateway - Javadoc Documentation not defined", appInfo.get("documentation-javadoc"));
         assertEquals("mgateway - Informations not defined", appInfo.get("information"));
         assertNotNull(appInfo.get("lastUpdated"));

@@ -60,7 +60,7 @@ public class CustomGlobalFilterTest {
         // Mock GatewayFilterChain
         when(chain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
 
-        // Utilise thenAnswer pour retourner une Collection<GrantedAuthority>
+        // Use thenAnswer to return a Collection<GrantedAuthority>
         when(authentication.getAuthorities())
                 .thenAnswer(invocation -> {
                     Collection<GrantedAuthority> authorities = new ArrayList<>();
@@ -68,20 +68,20 @@ public class CustomGlobalFilterTest {
                     return authorities;
                 });
 
-        // Mock ReactiveSecurityContextHolder.getContext() avec mockStatic
+        // Mock ReactiveSecurityContextHolder.getContext() with mockStatic
         try (MockedStatic<ReactiveSecurityContextHolder> mockedStatic = Mockito.mockStatic(ReactiveSecurityContextHolder.class)) {
             mockedStatic.when(ReactiveSecurityContextHolder::getContext)
                     .thenReturn(Mono.just(securityContext));
 
-            // Exécution
+            // Execution
             Mono<Void> result = customGlobalFilter.filter(exchange, chain);
 
-            // Vérification
+            // Verification
             StepVerifier.create(result)
                     .verifyComplete();
         }
 
-        // Vérifie que la chaîne est appelée avec un nouvel échange
+        // Check that the chain is called with a new exchange
         verify(chain, times(1)).filter(any(ServerWebExchange.class));
     }
 
@@ -90,27 +90,27 @@ public class CustomGlobalFilterTest {
 
     @Test
     void filter_WhenNoAuthHeadersAndUserNotAuthenticated_ShouldNotAddHeaders() {
-        // Mock SecurityContext sans Authentication
+        // Mock SecurityContext without Authentication
         SecurityContext securityContext = mock(SecurityContext.class);
         when(securityContext.getAuthentication()).thenReturn(null);
 
         // Mock GatewayFilterChain
         when(chain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
 
-        // Mock ReactiveSecurityContextHolder.getContext() avec mockStatic
+        // Mock ReactiveSecurityContextHolder.getContext() with mockStatic
         try (MockedStatic<ReactiveSecurityContextHolder> mockedStatic = Mockito.mockStatic(ReactiveSecurityContextHolder.class)) {
             mockedStatic.when(ReactiveSecurityContextHolder::getContext)
                     .thenReturn(Mono.just(securityContext));
 
-            // Exécution
+            // Execution
             Mono<Void> result = customGlobalFilter.filter(exchange, chain);
 
-            // Vérification
+            // Verification
             StepVerifier.create(result)
                     .verifyComplete();
         }
 
-        // Vérifie que la chaîne est appelée sans modification
+        // Verify that the string is called without modification.
         verify(chain, times(1)).filter(exchange);
     }
 
@@ -135,7 +135,7 @@ public class CustomGlobalFilterTest {
 
     @Test
     void filter_WhenNoAuthHeadersAndUserNotAuthenticatedButNotNull_ShouldNotAddHeaders() {
-        // Mock Authentication (non-authentifié)
+        // Mock Authentication (not authenticated)
         Authentication authentication = mock(Authentication.class);
         when(authentication.isAuthenticated()).thenReturn(false);
 
@@ -146,20 +146,20 @@ public class CustomGlobalFilterTest {
         // Mock GatewayFilterChain
         when(chain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
 
-        // Mock ReactiveSecurityContextHolder.getContext() avec mockStatic
+        // Mock ReactiveSecurityContextHolder.getContext() with mockStatic
         try (MockedStatic<ReactiveSecurityContextHolder> mockedStatic = Mockito.mockStatic(ReactiveSecurityContextHolder.class)) {
             mockedStatic.when(ReactiveSecurityContextHolder::getContext)
                     .thenReturn(Mono.just(securityContext));
 
-            // Exécution
+            // Execution
             Mono<Void> result = customGlobalFilter.filter(exchange, chain);
 
-            // Vérification
+            // Verification
             StepVerifier.create(result)
                     .verifyComplete();
         }
 
-        // Vérifie que la chaîne est appelée sans modification
+        // Verify that the string is called without modification.
         verify(chain, times(1)).filter(exchange);
     }
 }

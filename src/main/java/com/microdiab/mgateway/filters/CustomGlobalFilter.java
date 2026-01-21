@@ -45,16 +45,15 @@ public class CustomGlobalFilter implements GlobalFilter {
 
         log.debug("*** FILTER - {} {}", method, path);
 
-        // Vérifie si les headers d'authentification existent déjà
         if (!originalRequest.getHeaders().containsKey("X-Auth-Username")) {
-            log.debug("*** Vérifie si les headers d'authentification existent déjà");
+            log.debug("*** Check whether authentication headers already exist");
             return ReactiveSecurityContextHolder.getContext()
                     .flatMap(securityContext -> {
                         Authentication authentication = securityContext.getAuthentication();
                         if (authentication != null && authentication.isAuthenticated()) {
                             log.debug("***** LOGIN SUCCESS in filter *****");
                             log.debug("Authenticated user: {} for {}", authentication.getName(), path);
-                            log.debug("Rôles: {}", authentication.getAuthorities().toString());
+                            log.debug("Roles: {}", authentication.getAuthorities().toString());
 
                             ServerHttpRequest request = exchange.getRequest().mutate()
                                     .header("X-Auth-Username", authentication.getName())
@@ -68,7 +67,6 @@ public class CustomGlobalFilter implements GlobalFilter {
                         }
                     });
         } else {
-            // Les headers existent déjà, on passe la requête sans modification
             log.debug("*** The headers already exist, so we pass the request without modification.");
             return chain.filter(exchange);
         }}
